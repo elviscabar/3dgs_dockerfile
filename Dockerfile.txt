@@ -1,0 +1,39 @@
+# (1) CUDA 11.7 + cuDNN 8 + Ubuntu 22.04 기반
+FROM nvidia/cuda:11.7.1-cudnn8-devel-ubuntu22.04
+
+# (2) 환경 변수 설정
+ENV DEBIAN_FRONTEND=noninteractive
+
+# (3) 시스템 패키지 업데이트 & 필요한 도구 설치
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    git \
+    build-essential \
+    cmake \
+    python3 \
+    python3-pip \
+    libeigen3-dev \
+    libopencv-dev \
+    libx11-dev \
+    libxi-dev \
+    libglu-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+# (4) Python 패키지 업그레이드 및 필수 라이브러리 설치
+RUN pip3 install --upgrade pip
+#  - 3DGS 레포지토리 README에 따르면 Python 3.9~3.10 정도 권장
+#  - PyTorch 설치(버전은 CUDA 11.7 호환으로 선택)
+RUN pip3 install torch==2.0.0+cu117 torchvision==0.15.1+cu117 torchaudio==2.0.0 --extra-index-url https://download.pytorch.org/whl/cu117
+
+# (5) Gaussian Splatting 소스 코드 클론
+WORKDIR /workspace
+RUN git clone https://github.com/graphdeco-inria/gaussian-splatting.git
+
+# (6) 빌드 폴더 생성 및 CMake 빌드
+WORKDIR /workspace/gaussian-splatting
+RUN mkdir build && cd build && cmake .. && make -j$(nproc)
+
+# (7) 작업 디렉토리 설정
+WORKDIR /workspace/gaussian-splatting
+
+# (8) 컨테이너 실행 시 bash로 들어가도록 설정
+CMD ["/bin/bash"]
