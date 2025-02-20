@@ -26,11 +26,9 @@ RUN pip3 install torch==2.0.0+cu117 torchvision==0.15.1+cu117 torchaudio==2.0.0 
 
 # (5) Gaussian Splatting 소스 코드 클론
 WORKDIR /workspace
-RUN git clone https://github.com/graphdeco-inria/gaussian-splatting.git
+RUN git clone --branch main https://github.com/graphdeco-inria/gaussian-splatting.git
 
-# (6) 빌드 폴더 생성 및 CMake 빌드
-WORKDIR /workspace/gaussian-splatting
-RUN mkdir build && cd build && cmake .. && make -j$(nproc)
+# (6) [빌드 단계 제거 - 생략]
 
 # (7) 작업 디렉토리 설정
 WORKDIR /workspace/gaussian-splatting
